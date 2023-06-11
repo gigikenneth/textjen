@@ -55,6 +55,7 @@ func newBot(chatID int64) echotron.Bot {
 }
 
 func (b *bot) handlePrompt(update *echotron.Update) stateFn {
+	b.SendChatAction(echotron.Typing, b.chatID, nil)
 	response, err := b.generateText(message(update))
 	if err != nil {
 		log.Println("handlePrompt", err)
