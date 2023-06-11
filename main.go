@@ -15,10 +15,11 @@ type bot struct {
 	chatID       int64
 	echotron.API
 	cohereClient *cohere.Client
+	promptInput  bool
 }
 
 const (
-	token        = "KEY"
+	token        = "TOKEN KEY"
 	cohereAPIKey = "API KEY"
 )
 
@@ -38,6 +39,7 @@ func newBot(chatID int64) echotron.Bot {
 		chatID:       chatID,
 		API:          echotron.NewAPI(token),
 		cohereClient: cohereClient,
+		promptInput:  false,
 	}
 }
 
@@ -46,13 +48,18 @@ func (b *bot) Update(update *echotron.Update) {
 	if update.Message.Text == "/start" {
 		b.SendMessage("Hello world", b.chatID, nil)
 	} else if update.Message.Text == "/generate" {
-		response, err := b.generateText("give me an idea for a book")
+		b.SendMessage("Please enter a prompt:", b.chatID, nil)
+		b.promptInput = true
+	} else if b.promptInput {
+		prompt := update.Message.Text
+		response, err := b.generateText(prompt)
 		if err != nil {
 			b.SendMessage(fmt.Sprintf("Error: %s", err.Error()), b.chatID, nil)
 			return
 		}
 
 		b.SendMessage(response, b.chatID, nil)
+		b.promptInput = false
 	}
 }
 
